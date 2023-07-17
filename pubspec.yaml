@@ -1,0 +1,33 @@
+name: mhu_flutter_camera
+description: Camera specific utilities for Flutter projects
+version: 1.0.1-dev
+repository: https://github.com/maprohu/mhu_flutter_camera
+
+environment:
+  sdk: ^3.0.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  logger: ^1.4.0
+  freezed_annotation: ^2.4.1
+  image: any
+  camera: any
+  collection: any
+  fast_immutable_collections: any
+  rxdart: any
+
+#  mhu_dart_commons: ^1.0.6
+  mhu_dart_commons:
+    path: ../mhu_dart_commons
+  mhu_flutter_commons:
+    path: ../mhu_flutter_commons
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^2.1.1
+  build_runner: any
+  freezed: ^2.4.1
+  mhu_dart_builder:
+    path: ../mhu_dart_builder

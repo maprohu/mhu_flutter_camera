@@ -1,0 +1,49 @@
+/*
+protoc -I proto --dart_out=./lib/proto proto/config.proto --descriptor_set_out=proto/generated/descriptor --include_imports
+*/
+
+syntax = "proto3";
+
+message CameraConfigMsg {
+  string selectedCamera = 1;
+  map<string, string> cameraNames = 2;
+  CameraTimingMsg shutterTiming = 3;
+}
+
+message  CameraTimingMsg {
+  oneof shutterTiming {
+    CameraTimingBuiltinMsg immediate = 1;
+    CameraTimingBuiltinMsg delayHalfSecond = 2;
+    CameraTimingBuiltinMsg delayOneSecond = 3;
+    CameraTimingDelayedMsg customDelay = 4;
+  }
+}
+
+message  CameraTimingBuiltinMsg {}
+
+message  CameraTimingDelayedMsg {
+  int32 shutterDelayMilliseconds = 1;
+}
+enum ResolutionPresetEnm {
+  low = 0;
+  medium = 1;
+  high = 2;
+  veryHigh = 3;
+  ultraHigh = 4;
+  max = 5;
+}
+enum ExposureModeEnm {
+  autoExposure = 0;
+  exposureLocked = 1;
+}
+
+enum FlashModeEnm {
+  off = 0;
+  autoFlash = 1;
+  always = 2;
+  torch = 3;
+}
+enum FocusModeEnm {
+  autoFocus = 0;
+  focusLocked = 1;
+}
