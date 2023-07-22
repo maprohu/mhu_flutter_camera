@@ -11,24 +11,24 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:logger/logger.dart';
 import 'package:mhu_dart_commons/commons.dart';
 import 'package:mhu_dart_model/mhu_dart_model.dart';
-import 'package:mhu_flutter_camera/src/generated/mhu_flutter_camera.pbmeta.dart';
 import 'package:mhu_flutter_commons/mhu_flutter_commons.dart';
 import 'package:image/image.dart' as img;
 
-import 'generated/mhu_flutter_camera.pb.dart';
+import '../proto.dart';
 
 part 'camera.freezed.dart';
 
 final _logger = Logger();
 
 extension CameraTimingMsgX on CameraTimingMsg {
-  int get shutterDelayMilliseconds => whenShutterTiming(
-        immediate: (immediate) => 0,
-        delayHalfSecond: (delayHalfSecond) => 500,
-        delayOneSecond: (delayOneSecond) => 1000,
-        customDelay: (customDelay) => customDelay.shutterDelayMilliseconds,
-        notSet: () => 500,
-      );
+  int get shutterDelayMilliseconds => switch (shutterTiming) {
+        CameraTimingMsg_ShutterTiming$immediate() => 0,
+        CameraTimingMsg_ShutterTiming$delayHalfSecond() => 500,
+        CameraTimingMsg_ShutterTiming$delayOneSecond() => 1000,
+        CameraTimingMsg_ShutterTiming$customDelay(:final value) =>
+          value.shutterDelayMilliseconds,
+        CameraTimingMsg_ShutterTiming$notSet$() => 500,
+      };
 }
 
 @freezed
