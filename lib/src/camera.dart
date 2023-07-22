@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:collection/collection.dart';
@@ -11,14 +10,12 @@ import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:logger/logger.dart';
 import 'package:mhu_dart_commons/commons.dart';
+import 'package:mhu_dart_model/mhu_dart_model.dart';
+import 'package:mhu_flutter_camera/src/generated/mhu_flutter_camera.pbmeta.dart';
 import 'package:mhu_flutter_commons/mhu_flutter_commons.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:image/image.dart' as img;
-import 'package:image/image.dart' as imglib;
 
-import '../proto/mhu_flutter_camera.pb.dart';
-import '../proto/mhu_flutter_camera.pbenum.dart';
-
+import 'generated/mhu_flutter_camera.pb.dart';
 
 part 'camera.freezed.dart';
 
@@ -26,13 +23,14 @@ final _logger = Logger();
 
 extension CameraTimingMsgX on CameraTimingMsg {
   int get shutterDelayMilliseconds => whenShutterTiming(
-    immediate: (immediate) => 0,
-    delayHalfSecond: (delayHalfSecond) => 500,
-    delayOneSecond: (delayOneSecond) => 1000,
-    customDelay: (customDelay) => customDelay.shutterDelayMilliseconds,
-    notSet: () => 500,
-  );
+        immediate: (immediate) => 0,
+        delayHalfSecond: (delayHalfSecond) => 500,
+        delayOneSecond: (delayOneSecond) => 1000,
+        customDelay: (customDelay) => customDelay.shutterDelayMilliseconds,
+        notSet: () => 500,
+      );
 }
+
 @freezed
 class FcmRoot with _$FcmRoot {
   FcmRoot._();
@@ -295,7 +293,7 @@ class CameraControllerBits with _$CameraControllerBits {
 
   factory CameraControllerBits({
     required CameraController controller,
-    required Disposers disposers,
+    required DspReg disposers,
   }) = _CameraControllerBits;
 
   Future<void> startImageStream(CameraImageListener listener) async {
@@ -305,7 +303,7 @@ class CameraControllerBits with _$CameraControllerBits {
   }
 
   Future<XFile>? takePicture() {
-    if (disposers.disposed) {
+    if (disposers.isDisposed) {
       return null;
     }
     return controller.takePicture();
@@ -414,8 +412,7 @@ class CameraBits with _$CameraBits {
         resolutionPreset: resolution.map(flcResolutionPresetBidi.forward),
       );
 
-  Future<Fr<CameraControllerOpt>?> acquire(DspReg disposers) =>
-      cameras.acquire(
+  Future<Fr<CameraControllerOpt>?> acquire(DspReg disposers) => cameras.acquire(
         settings: cameraSettings(),
         disposers: disposers,
       );
@@ -591,7 +588,7 @@ extension FlcWidgetX on Widget {
         mainAxisSize: MainAxisSize.min,
         children: [
           this,
-          withBottomOverlayButtonSpace,
+          flcOverlayButtonSpace,
         ],
       );
 }
@@ -824,10 +821,10 @@ List<Widget> cameraBottomMenu({
 }
 
 extension CameraImageX on CameraImage {
-  CmnDimensionsMsg get dimensions => CmnDimensionsMsg(
-        width: width,
-        height: height,
-      )..freeze();
+  CmnDimensionsMsg get dimensions => CmnDimensionsMsg()
+    ..width = width
+    ..height = height
+    ..freeze();
 
   Size get size => Size(
         width.toDouble(),
@@ -935,12 +932,12 @@ void flcShowResolutionMenu({
   );
 }
 
-final flcResolutionPresetBidi = mk.BiDi.protobufEnumByIndex(
+final flcResolutionPresetBidi = BiDi.protobufEnumByIndex(
   ResolutionPresetEnm.values,
   ResolutionPreset.values,
 );
 
-imglib.Image decodeYUV420SP(CameraImage image) {
+img.Image decodeYUV420SP(CameraImage image) {
   final int width = image.width;
   final int height = image.height;
 
@@ -948,7 +945,7 @@ imglib.Image decodeYUV420SP(CameraImage image) {
   //int total = width * height;
   //Uint8List rgb = Uint8List(total);
   final outImg =
-      imglib.Image(width: width, height: height); // default numChannels is 3
+      img.Image(width: width, height: height); // default numChannels is 3
 
   final int frameSize = width * height;
 
@@ -966,15 +963,21 @@ imglib.Image decodeYUV420SP(CameraImage image) {
       int g = (y1192 - 833 * v - 400 * u);
       int b = (y1192 + 2066 * u);
 
-      if (r < 0)
+      if (r < 0) {
         r = 0;
-      else if (r > 262143) r = 262143;
-      if (g < 0)
+      } else if (r > 262143) {
+        r = 262143;
+      }
+      if (g < 0) {
         g = 0;
-      else if (g > 262143) g = 262143;
-      if (b < 0)
+      } else if (g > 262143) {
+        g = 262143;
+      }
+      if (b < 0) {
         b = 0;
-      else if (b > 262143) b = 262143;
+      } else if (b > 262143) {
+        b = 262143;
+      }
 
       // I don't know how these r, g, b values are defined, I'm just copying what you had bellow and
       // getting their 8-bit values.

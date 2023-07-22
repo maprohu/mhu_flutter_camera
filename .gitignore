@@ -3,6 +3,16 @@
 .dart_tool/
 build/
 
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
 # Avoid committing pubspec.lock for library packages; see
 # https://dart.dev/guides/libraries/private-files#pubspeclock.
 pubspec.lock
@@ -10,4 +20,4 @@ pubspec.lock
 *.iml
 *.freezed.dart
 *.g.dart
-lib/proto/
+generated/

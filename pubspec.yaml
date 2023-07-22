@@ -6,6 +6,18 @@ repository: https://github.com/maprohu/mhu_flutter_camera
 environment:
   sdk: ^3.0.5
 
+dependency_overrides:
+  mhu_dart_commons:
+    path: ../mhu_dart_commons
+  mhu_dart_proto:
+    path: ../mhu_dart_proto
+  mhu_dart_model:
+    path: ../mhu_dart_model
+  mhu_flutter_commons:
+    path: ../mhu_flutter_commons
+  mhu_dart_builder:
+    path: ../mhu_dart_builder
+
 dependencies:
   flutter:
     sdk: flutter
@@ -17,17 +29,15 @@ dependencies:
   fast_immutable_collections: any
   rxdart: any
 
-#  mhu_dart_commons: ^1.0.6
-  mhu_dart_commons:
-    path: ../mhu_dart_commons
+  mhu_dart_commons: ^1.0.7
+  mhu_dart_model: ^1.0.1
   mhu_flutter_commons:
-    path: ../mhu_flutter_commons
+  mhu_dart_proto: ^1.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   lints: ^2.1.1
-  build_runner: any
+  build_runner: ^2.4.6
   freezed: ^2.4.1
-  mhu_dart_builder:
-    path: ../mhu_dart_builder
+  mhu_dart_builder: ^1.0.1
