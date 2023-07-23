@@ -738,7 +738,7 @@ List<Widget> cameraBottomMenu({
     String label,
     CameraDescription camera,
   ) {
-    stringEditorDialog(
+    ValidatingTextField.showDialog(
       ui: ui,
       title: const Text('Rename Camera'),
       initialValue: label,
