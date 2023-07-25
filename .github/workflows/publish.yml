@@ -1,0 +1,25 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: sudo apt-get install -y protobuf-compiler
+      - run: dart pub global activate protoc_plugin
+      - run: flutter pub get
+      - run: dart run build_runner build
+      - run: dart tool/run_pb_all.dart
+      - run: dart pub publish --dry-run
+      - run: dart pub publish -f

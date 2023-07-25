@@ -621,22 +621,22 @@ Widget cameraShutterWidget({
   required TickerProvider tickerProvider,
   required DspReg disposers,
 }) {
-  final _timer = fw<double?>(null);
+  final timer = fw<double?>(null);
 
-  final _shooting = fr(() => _timer() != null);
+  final shootingFr = fr(() => timer() != null);
 
   var latestDisposers = DspImpl();
   disposers.add(() => latestDisposers.dispose());
 
-  void _shutterClicked(TickerProvider tickers) {
+  void shutterClicked(TickerProvider tickers) {
     final shutterDelayMilliseconds =
         shutterTiming.read().shutterDelayMilliseconds;
 
     if (shutterDelayMilliseconds <= 0) {
-      _timer.value = 0;
+      timer.value = 0;
       takePicture();
     } else {
-      _timer.value = 1;
+      timer.value = 1;
 
       late final Ticker ticker;
 
@@ -645,7 +645,7 @@ Widget cameraShutterWidget({
       ticker = tickers.createTicker(
         (elapsed) {
           final time = 1 - elapsed.inMilliseconds / shutterDelayMilliseconds;
-          _timer.value = time;
+          timer.value = time;
           if (time <= 0) {
             latestDisposers.dispose();
             try {
@@ -680,13 +680,13 @@ Widget cameraShutterWidget({
     fit: StackFit.expand,
     children: [
       flcFrr(() {
-        final shooting = _shooting();
+        final shooting = shootingFr();
 
         if (shooting) return nullWidget;
 
         final button = flcCameraOverlayButton(
           onPressed: () {
-            _shutterClicked(tickerProvider);
+            shutterClicked(tickerProvider);
           },
         );
 
@@ -698,7 +698,7 @@ Widget cameraShutterWidget({
         );
       }),
       flcFrr(() {
-        final time = _timer();
+        final time = timer();
 
         if (time == null) {
           return nullWidget;
@@ -734,7 +734,7 @@ List<Widget> cameraBottomMenu({
 }) {
   final ui = cameraBits.ui;
 
-  void _renameCamera(
+  void renameCamera(
     String label,
     CameraDescription camera,
   ) {
@@ -750,7 +750,7 @@ List<Widget> cameraBottomMenu({
     );
   }
 
-  void _selectCamera() {
+  void selectCamera() {
     ui.showBottomSheet(
       (completer) => flcFrr(
         () {
@@ -776,7 +776,7 @@ List<Widget> cameraBottomMenu({
                     cameraBits.watchCameraLabelOrFacing(cameraDescription);
                 return TextButton(
                   onPressed: () {
-                    _renameCamera(
+                    renameCamera(
                       label,
                       cameraDescription,
                     );
@@ -798,7 +798,7 @@ List<Widget> cameraBottomMenu({
     TextButton(
       onPressed: () {
         popper.pop();
-        _selectCamera();
+        selectCamera();
       },
       child: flcFrr(
         () => Text(
@@ -890,7 +890,7 @@ extension ImgImageX on img.Image {
     if (rotate != 0) {
       cmd.copyRotate(angle: rotate);
     }
-    cmd..encodeJpg();
+    cmd.encodeJpg();
 
     return await cmd.executeThread();
   }
