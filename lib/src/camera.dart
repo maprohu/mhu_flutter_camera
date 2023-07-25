@@ -7,7 +7,7 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:logger/logger.dart';
 import 'package:mhu_dart_commons/commons.dart';
 import 'package:mhu_dart_model/mhu_dart_model.dart';

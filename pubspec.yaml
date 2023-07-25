@@ -22,7 +22,6 @@ dependencies:
   flutter:
     sdk: flutter
   logger: ^1.4.0
-  freezed_annotation: ^2.4.1
   image: any
   camera: any
   collection: any
