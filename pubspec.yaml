@@ -1,38 +1,38 @@
 name: mhu_flutter_camera
 description: Camera specific utilities for Flutter projects
-version: 1.0.1-dev
+version: 1.0.2
 repository: https://github.com/maprohu/mhu_flutter_camera
 
 environment:
   sdk: ^3.0.5
 
-dependency_overrides:
-  mhu_dart_commons:
-    path: ../mhu_dart_commons
-  mhu_dart_proto:
-    path: ../mhu_dart_proto
-  mhu_dart_model:
-    path: ../mhu_dart_model
-  mhu_flutter_commons:
-    path: ../mhu_flutter_commons
-  mhu_dart_builder:
-    path: ../mhu_dart_builder
+#dependency_overrides:
+#  mhu_dart_commons:
+#    path: ../mhu_dart_commons
+#  mhu_dart_proto:
+#    path: ../mhu_dart_proto
+#  mhu_dart_model:
+#    path: ../mhu_dart_model
+#  mhu_flutter_commons:
+#    path: ../mhu_flutter_commons
+#  mhu_dart_builder:
+#    path: ../mhu_dart_builder
 
 dependencies:
   flutter:
     sdk: flutter
   logger: ^1.4.0
-  freezed_annotation: ^2.4.1
-  image: any
-  camera: any
-  collection: any
-  fast_immutable_collections: any
-  rxdart: any
+  image: ^4.0.17
+  camera: ^0.10.5+2
+  collection: ^1.17.1
+  fast_immutable_collections: ^9.1.5
+  rxdart: ^0.27.7
 
-  mhu_dart_commons: ^1.0.7
-  mhu_dart_model: ^1.0.1
-  mhu_flutter_commons:
-  mhu_dart_proto: ^1.0.1
+  mhu_dart_proto: ^1.0.2
+  mhu_dart_model: ^1.0.2
+  mhu_dart_commons: ^1.0.8
+  mhu_flutter_commons: ^1.0.5
+  protobuf: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -40,4 +40,4 @@ dev_dependencies:
   lints: ^2.1.1
   build_runner: ^2.4.6
   freezed: ^2.4.1
-  mhu_dart_builder: ^1.0.1
+  mhu_dart_builder: ^1.0.2
