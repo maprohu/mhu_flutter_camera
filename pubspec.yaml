@@ -1,6 +1,6 @@
 name: mhu_flutter_camera
 description: Camera specific utilities for Flutter projects
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/maprohu/mhu_flutter_camera
 
 environment:

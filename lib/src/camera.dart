@@ -90,9 +90,29 @@ class FcmRoot with _$FcmRoot {
             : ImageFormatGroup.bgra8888, // for iOS
       );
 
-      await permissionQueue.submit(
-        cameraController.initialize,
-      );
+      final initSuccess = await permissionQueue.submit(() async {
+        try {
+          await cameraController.initialize();
+          return true;
+        } on CameraException catch (e, st) {
+          _logger.d(e.description, e, st);
+
+          switch (e.code) {
+            case 'CameraAccessDenied':
+            case 'CameraAccessDeniedWithoutPrompt':
+            ccfw.value = CameraControllerOpt.permissionDenied();
+            default:
+              ccfw.value =
+                  CameraControllerOpt.error("${e.description} (${e.code})");
+          }
+
+
+          return false;
+        }
+      });
+      if (!initSuccess) {
+        return;
+      }
 
       await cameraController
           .lockCaptureOrientation(DeviceOrientation.portraitUp);
@@ -279,6 +299,12 @@ class FcmCameraControllerParams with _$FcmCameraControllerParams {
 sealed class CameraControllerOpt with _$CameraControllerOpt {
   const factory CameraControllerOpt.missing() = CameraControllerMissing;
 
+  const factory CameraControllerOpt.permissionDenied() =
+      CameraControllerPermissionDenied;
+
+  const factory CameraControllerOpt.error(final String description) =
+      CameraControllerError;
+
   const factory CameraControllerOpt.busy() = CameraControllerBusy;
 
   const factory CameraControllerOpt.here(CameraControllerBits controllerBits) =
@@ -308,54 +334,6 @@ class CameraControllerBits with _$CameraControllerBits {
     }
     return controller.takePicture();
   }
-
-// final _listeners = Var(IList<CameraImageListener>());
-//
-// late final _streamDisposers = Var(DspImpl()).also((dspVar) {
-//   disposers.add(() => dspVar.value.dispose());
-// });
-//
-// late final _queue = TaskQueue(disposers: disposers);
-//
-// Future<void> _startStreaming() async {
-//   await controller.startImageStream(
-//     (image) {
-//       for (final lst in _listeners.value) {
-//         lst(image);
-//       }
-//     },
-//   );
-//
-//   final dsp = DspImpl();
-//   dsp.add(controller.stopImageStream);
-//   _streamDisposers.value = dsp;
-// }
-//
-//
-// Future<void> listenImageStream({
-//   required CameraImageListener listener,
-//   required Disposers disposers,
-// }) {
-//   return _queue.submitOrRun(() async {
-//     final first = _listeners.value.isEmpty;
-//
-//     _listeners.value = _listeners.value.add(listener);
-//
-//     if (first) {
-//       _startStreaming();
-//     }
-//
-//     disposers.add(() {
-//       return _queue.submit(() async {
-//         _listeners.value = _listeners.value.remove(listener);
-//         if (_listeners.value.isEmpty) {
-//           await _streamDisposers.value.dispose();
-//           _streamDisposers.value = DspImpl();
-//         }
-//       });
-//     });
-//   });
-// }
 }
 
 typedef CameraNames = CachedFu<String, String, Map<String, String>, Fw<String>>;
@@ -366,17 +344,11 @@ class CameraBits with _$CameraBits {
 
   factory CameraBits({
     required FcmRoot cameras,
-    // required CameraConfigMsg$Fw config,
     required CameraNames cameraNames,
     required Fw<String> selectedCameraName,
     required Fw<ResolutionPresetEnm> resolution,
-    // required TaskQueue permissionQueue,
     required FlcUi ui,
   }) = _CameraBits;
-
-  // late final selectedCameraName = config.selectedCamera$;
-
-  // late final cameraNames = config.cameraNames$;
 
   final _disposers = DspImpl();
 
@@ -416,84 +388,6 @@ class CameraBits with _$CameraBits {
         settings: cameraSettings(),
         disposers: disposers,
       );
-
-// late final _pool =
-//     RefCountPool<void, Fr<CameraControllerOpt>>((_, disposers) async {
-//   final ccfwDisposers = DspImpl();
-//   final ccfw = fw<CameraControllerOpt>(
-//     CameraControllerBusy(),
-//     disposers: ccfwDisposers,
-//   );
-//   var currentDisposers = DspImpl();
-//
-//   Future<void> recreate(FcmCameraControllerParams params) async {
-//     ccfw.value = CameraControllerBusy();
-//     await currentDisposers.dispose();
-//     currentDisposers = DspImpl();
-//
-//     final FcmCameraControllerParams(
-//       :cameraDescription,
-//     ) = params;
-//
-//     if (cameraDescription == null) {
-//       ccfw.value = CameraControllerMissing();
-//       return;
-//     }
-//
-//     final cameraController = CameraController(
-//       cameraDescription,
-//       ResolutionPreset.max,
-//       enableAudio: false,
-//       imageFormatGroup: Platform.isAndroid
-//           ? ImageFormatGroup.nv21 // for Android
-//           : ImageFormatGroup.bgra8888, // for iOS
-//     );
-//
-//     await permissionQueue.submit(
-//       cameraController.initialize,
-//     );
-//
-//     final bitsDisposers = DspImpl();
-//     ccfw.value = CameraControllerHere(
-//       CameraControllerBits(
-//         controller: cameraController,
-//         disposers: bitsDisposers,
-//       ),
-//     );
-//
-//     currentDisposers.add(() async {
-//       await bitsDisposers.dispose();
-//       await cameraController.dispose();
-//     });
-//   }
-//
-//   final latestDisposers = DspImpl();
-//   final latestExecutor = LatestExecutor(
-//     disposers: latestDisposers,
-//     process: recreate,
-//   );
-//
-//   final frDisposers = DspImpl();
-//   frDisposers.fr(() {
-//     final params = FcmCameraControllerParams(
-//       cameraDescription: selectedCameraDescription(),
-//     );
-//
-//     latestExecutor.submit(params);
-//   });
-//
-//   disposers.add(() async {
-//     await frDisposers.dispose();
-//     await latestDisposers.dispose();
-//     await ccfwDisposers.dispose();
-//     await currentDisposers.dispose();
-//   });
-//
-//   return ccfw;
-// });
-
-// Future<Fr<CameraControllerOpt>> acquire(Disposers disposers) =>
-//     _pool.acquire(null, disposers);
 }
 
 extension CameraValueX on CameraValue {
@@ -942,8 +836,6 @@ img.Image decodeYUV420SP(CameraImage image) {
   final int height = image.height;
 
   Uint8List yuv420sp = image.planes[0].bytes;
-  //int total = width * height;
-  //Uint8List rgb = Uint8List(total);
   final outImg =
       img.Image(width: width, height: height); // default numChannels is 3
 
