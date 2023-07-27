@@ -39,6 +39,7 @@ class FcmRoot with _$FcmRoot {
     required Fr<IList<CameraDescription>> availableCameras,
     required Future<IList<CameraDescription>> Function() refresh,
     required TaskQueue permissionQueue,
+    Widget? fakePreviewWidget,
   }) = _FcmRoot;
 
   final lock = Locker(null);
@@ -47,6 +48,17 @@ class FcmRoot with _$FcmRoot {
     required FcmCameraSettings settings,
     required DspReg disposers,
   }) async {
+    final fpw = fakePreviewWidget;
+    if (fpw != null) {
+      return fw(
+        CameraControllerHere(
+          CameraControllerBitsFake(
+            previewWidget: fpw,
+          ),
+        ),
+      );
+    }
+
     final lockDisposers = DspImpl();
     await lock.acquire(lockDisposers);
     if (disposers.isDisposed) {
@@ -100,12 +112,11 @@ class FcmRoot with _$FcmRoot {
           switch (e.code) {
             case 'CameraAccessDenied':
             case 'CameraAccessDeniedWithoutPrompt':
-            ccfw.value = CameraControllerOpt.permissionDenied();
+              ccfw.value = CameraControllerOpt.permissionDenied();
             default:
               ccfw.value =
                   CameraControllerOpt.error("${e.description} (${e.code})");
           }
-
 
           return false;
         }
@@ -182,7 +193,7 @@ class FcmRoot with _$FcmRoot {
 
       final bitsDisposers = DspImpl();
       ccfw.value = CameraControllerHere(
-        CameraControllerBits(
+        CameraControllerBits.real(
           controller: cameraController,
           disposers: bitsDisposers,
         ),
@@ -236,6 +247,7 @@ class FcmRoot with _$FcmRoot {
 
 Future<FcmRoot> fcmRoot({
   required TaskQueue permissionQueue,
+  Widget? fakePreviewWidget,
 }) async {
   Future<IList<CameraDescription>> fetch() async =>
       (await availableCameras()).toIList();
@@ -246,6 +258,7 @@ Future<FcmRoot> fcmRoot({
     refresh: () async {
       return (await fetch()).also(camerasFw.set);
     },
+    fakePreviewWidget: fakePreviewWidget,
   );
 }
 
@@ -314,14 +327,49 @@ sealed class CameraControllerOpt with _$CameraControllerOpt {
 typedef CameraImageListener = void Function(CameraImage image);
 
 @freezed
-class CameraControllerBits with _$CameraControllerBits {
+sealed class CameraControllerBits with _$CameraControllerBits {
   CameraControllerBits._();
 
-  factory CameraControllerBits({
+  factory CameraControllerBits.real({
     required CameraController controller,
     required DspReg disposers,
-  }) = _CameraControllerBits;
+  }) = CameraControllerBitsReal;
 
+  factory CameraControllerBits.fake({
+    required Widget previewWidget,
+  }) = CameraControllerBitsFake;
+}
+
+extension CameraControllerBitsX on CameraControllerBits {
+  CameraDescription? get description => switch (this) {
+        CameraControllerBitsReal(:final controller) => controller.description,
+        _ => null,
+      };
+
+  Widget get previewWidget => switch (this) {
+        CameraControllerBitsReal(:final controller) =>
+          controller.previewWidget(),
+        CameraControllerBitsFake(:final previewWidget) => previewWidget,
+      };
+
+  Future<XFile> takePicture() async {
+    switch (this) {
+      case CameraControllerBitsReal(:final controller):
+        return await controller.takePicture();
+      default:
+        throw this;
+    }
+  }
+
+  DspReg get disposers => switch (this) {
+        CameraControllerBitsReal(:final disposers) => disposers,
+        _ => DspReg.never,
+      };
+
+  Future<void> startImageStream(void Function(CameraImage) process) async {}
+}
+
+extension CameraControllerBitsRealX on CameraControllerBitsReal {
   Future<void> startImageStream(CameraImageListener listener) async {
     await controller.startImageStream(listener);
 
@@ -455,17 +503,6 @@ Widget cameraPreviewWidget(
       );
     });
   });
-  // return ValueListenableBuilder(
-  //   valueListenable: cameraController,
-  //   builder: (context, cc, child) {
-  //     return Center(
-  //       child: AspectRatio(
-  //         aspectRatio: 1 / cc.aspectRatio,
-  //         child: cameraController.buildPreview(),
-  //       ),
-  //     );
-  //   },
-  // );
 }
 
 const double shutterButtonPadding = 24.0;
